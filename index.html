@@ -593,19 +593,24 @@ async function loadUser(){
 
 function closePay(){document.getElementById('pay-modal').classList.remove('show')}
 
+// ── SHOW APP ──
+function showApp(){
+  document.getElementById('ld').classList.add('gone');
+  const a=document.getElementById('app');
+  a.style.display='flex';a.style.flexDirection='column';
+  a.style.height='100%';a.style.opacity='1';
+  initGame();
+}
+
 // ── INIT ──
-window.addEventListener('load',async()=>{
+window.addEventListener('load',()=>{
   initTG();
   genStars();
-  await loadUser();
-  setTimeout(()=>{
-    document.getElementById('ld').classList.add('gone');
-    document.getElementById('app').style.opacity='1';
-    document.getElementById('app').style.display='flex';
-    document.getElementById('app').style.flexDirection='column';
-    document.getElementById('app').style.height='100%';
-    initGame();
-  },2800);
+  updateUI();
+  // Show app after 2.8s no matter what — don't wait for server
+  setTimeout(showApp,2800);
+  // Load user in background
+  loadUser();
 });
 
 function genStars(){
