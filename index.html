@@ -1,0 +1,1599 @@
+<!DOCTYPE html>
+
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>I Am Clan Fly</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --md-primary: #0095f6;
+    --md-primary-dark: #0077c2;
+    --md-secondary: #00e5ff;
+    --md-accent: #ff6b35;
+    --md-danger: #ff3d4a;
+    --md-success: #00e676;
+    --md-gold: #ffd700;
+    --md-surface: #0a0e1a;
+    --md-surface2: #111827;
+    --md-surface3: #1a2235;
+    --md-surface4: #1e2d47;
+    --md-border: rgba(0,149,246,0.2);
+    --md-text: #e8f4ff;
+    --md-text-secondary: rgba(232,244,255,0.6);
+    --radius-sm: 8px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    --radius-xl: 32px;
+  }
+
+- { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+background: var(–md-surface);
+color: var(–md-text);
+font-family: ‘Exo 2’, sans-serif;
+height: 100vh;
+overflow: hidden;
+position: relative;
+}
+
+/* ===== LOADING SCREEN ===== */
+#loading-screen {
+position: fixed; inset: 0; z-index: 1000;
+background: linear-gradient(160deg, #040812 0%, #0a1628 50%, #091220 100%);
+display: flex; flex-direction: column;
+align-items: center; justify-content: center;
+transition: opacity 0.6s ease, transform 0.6s ease;
+}
+#loading-screen.hide { opacity:0; pointer-events:none; transform: scale(1.05); }
+
+.loading-stars {
+position: absolute; inset: 0; overflow: hidden;
+}
+.star {
+position: absolute;
+background: white; border-radius: 50%;
+animation: twinkle var(–d, 3s) infinite var(–delay, 0s);
+}
+
+@keyframes twinkle {
+0%,100% { opacity:0.2; transform:scale(1); }
+50% { opacity:1; transform:scale(1.5); }
+}
+
+.loading-plane-wrap {
+position: relative; width: 160px; height: 160px;
+margin-bottom: 32px;
+}
+
+.plane-svg {
+width: 120px; height: 120px;
+filter: drop-shadow(0 0 20px rgba(0,149,246,0.8));
+animation: planePulse 2s ease-in-out infinite;
+position: absolute; top: 50%; left: 50%;
+transform: translate(-50%, -50%);
+}
+
+.plane-ring {
+position: absolute; inset: 0;
+border-radius: 50%;
+border: 2px solid rgba(0,149,246,0.3);
+animation: ringExpand 2s ease-out infinite;
+}
+.plane-ring:nth-child(2) { animation-delay: 0.7s; }
+.plane-ring:nth-child(3) { animation-delay: 1.4s; }
+
+@keyframes ringExpand {
+0% { transform:scale(0.5); opacity:1; }
+100% { transform:scale(1.8); opacity:0; }
+}
+
+@keyframes planePulse {
+0%,100% { transform:translate(-50%,-50%) scale(1) rotate(-10deg); }
+50% { transform:translate(-50%,-50%) scale(1.08) rotate(-10deg); }
+}
+
+.loading-title {
+font-family: ‘Rajdhani’, sans-serif;
+font-size: 32px; font-weight: 700;
+letter-spacing: 3px;
+text-transform: uppercase;
+background: linear-gradient(135deg, #0095f6, #00e5ff, #ffffff);
+-webkit-background-clip: text; -webkit-text-fill-color: transparent;
+margin-bottom: 8px;
+}
+
+.loading-subtitle {
+font-size: 13px; color: var(–md-text-secondary);
+letter-spacing: 6px; text-transform: uppercase;
+margin-bottom: 40px;
+}
+
+.loading-bar-wrap {
+width: 200px; height: 4px;
+background: rgba(255,255,255,0.1);
+border-radius: 99px; overflow: hidden;
+}
+.loading-bar {
+height: 100%; border-radius: 99px;
+background: linear-gradient(90deg, #0095f6, #00e5ff);
+animation: loadProgress 2.5s ease-in-out forwards;
+box-shadow: 0 0 10px rgba(0,149,246,0.8);
+}
+@keyframes loadProgress {
+0% { width:0; } 100% { width:100%; }
+}
+
+/* ===== MAIN APP ===== */
+#app {
+height: 100vh;
+display: flex; flex-direction: column;
+opacity: 0; transition: opacity 0.4s ease;
+background: var(–md-surface);
+}
+#app.show { opacity: 1; }
+
+/* PAGES */
+.page { display: none; flex:1; flex-direction:column; overflow: hidden; }
+.page.active { display: flex; }
+
+/* ===== GAME PAGE ===== */
+#page-game {
+background: radial-gradient(ellipse at 50% 20%, #0a1e3a 0%, #050d1a 70%);
+position: relative;
+}
+
+.game-header {
+display: flex; align-items: center; justify-content: space-between;
+padding: 12px 16px 8px;
+background: rgba(10,14,26,0.8);
+backdrop-filter: blur(10px);
+border-bottom: 1px solid var(–md-border);
+flex-shrink: 0;
+}
+
+.game-header-balance {
+display: flex; align-items: center; gap: 6px;
+background: var(–md-surface3);
+padding: 6px 14px; border-radius: 99px;
+border: 1px solid var(–md-border);
+}
+.game-header-balance span { font-size: 13px; font-weight: 600; color: var(–md-gold); }
+.balance-icon { font-size: 16px; }
+
+.game-header-title {
+font-family: ‘Rajdhani’, sans-serif;
+font-size: 18px; font-weight: 700;
+color: var(–md-secondary); letter-spacing: 1px;
+}
+
+.game-header-streak {
+display: flex; align-items: center; gap: 4px;
+font-size: 12px; color: var(–md-text-secondary);
+}
+
+/* GAME CANVAS AREA */
+.game-canvas-wrap {
+flex: 1;
+position: relative;
+overflow: hidden;
+min-height: 0;
+}
+
+#game-canvas {
+width: 100%; height: 100%;
+display: block;
+}
+
+/* Multiplier overlay */
+.multiplier-display {
+position: absolute; top: 12px; left: 50%;
+transform: translateX(-50%);
+font-family: ‘Rajdhani’, sans-serif;
+font-size: 42px; font-weight: 700;
+color: var(–md-gold);
+text-shadow: 0 0 20px rgba(255,215,0,0.6);
+opacity: 0; transition: opacity 0.3s;
+pointer-events: none;
+}
+.multiplier-display.show { opacity: 1; }
+
+.crash-overlay {
+position: absolute; inset: 0;
+display: flex; flex-direction: column;
+align-items: center; justify-content: center;
+background: rgba(255,61,74,0.15);
+backdrop-filter: blur(4px);
+opacity: 0; pointer-events: none;
+transition: opacity 0.3s;
+}
+.crash-overlay.show { opacity:1; }
+.crash-text {
+font-family: ‘Rajdhani’, sans-serif;
+font-size: 48px; font-weight: 700;
+color: var(–md-danger);
+text-shadow: 0 0 30px rgba(255,61,74,0.8);
+animation: crashShake 0.4s ease;
+}
+@keyframes crashShake {
+0%,100%{transform:translateX(0)} 25%{transform:translateX(-10px)} 75%{transform:translateX(10px)}
+}
+.crash-sub { font-size: 16px; color: rgba(255,100,100,0.8); margin-top: 8px; }
+
+.win-overlay {
+position: absolute; inset: 0;
+display: flex; flex-direction: column;
+align-items: center; justify-content: center;
+background: rgba(0,230,118,0.1);
+backdrop-filter: blur(4px);
+opacity: 0; pointer-events: none;
+transition: opacity 0.3s;
+}
+.win-overlay.show { opacity:1; }
+.win-text {
+font-family: ‘Rajdhani’, sans-serif;
+font-size: 40px; font-weight: 700;
+color: var(–md-success);
+text-shadow: 0 0 30px rgba(0,230,118,0.8);
+}
+.win-amount { font-size: 22px; color: var(–md-gold); margin-top: 4px; font-weight: 700; }
+
+/* GAME CONTROLS */
+.game-controls {
+flex-shrink: 0;
+padding: 12px 16px;
+background: var(–md-surface2);
+border-top: 1px solid var(–md-border);
+}
+
+.controls-row1 {
+display: flex; gap: 8px; align-items: center; margin-bottom: 10px;
+}
+
+.bet-input-wrap {
+flex: 1; position: relative;
+}
+.bet-input-wrap label {
+position: absolute; top: -8px; left: 12px;
+font-size: 10px; color: var(–md-text-secondary);
+background: var(–md-surface2); padding: 0 4px;
+letter-spacing: 1px; text-transform: uppercase;
+}
+.bet-input {
+width: 100%; padding: 12px 16px;
+background: var(–md-surface3);
+border: 1.5px solid var(–md-border);
+border-radius: var(–radius-md);
+color: var(–md-text); font-family: ‘Exo 2’, sans-serif;
+font-size: 16px; font-weight: 600;
+outline: none; transition: border-color 0.2s;
+}
+.bet-input:focus { border-color: var(–md-primary); }
+
+.bet-quick {
+display: flex; gap: 4px;
+}
+.bet-quick-btn {
+padding: 6px 10px;
+background: var(–md-surface3);
+border: 1px solid var(–md-border);
+border-radius: var(–radius-sm);
+color: var(–md-text-secondary);
+font-size: 11px; font-weight: 600; font-family: ‘Exo 2’, sans-serif;
+cursor: pointer; transition: all 0.15s;
+}
+.bet-quick-btn:active { background: var(–md-primary); color: white; border-color: var(–md-primary); }
+
+.play-btn {
+padding: 14px 24px;
+background: linear-gradient(135deg, #0095f6, #0077c2);
+border: none; border-radius: var(–radius-md);
+color: white; font-family: ‘Rajdhani’, sans-serif;
+font-size: 18px; font-weight: 700; letter-spacing: 1px;
+cursor: pointer;
+box-shadow: 0 4px 20px rgba(0,149,246,0.4);
+transition: all 0.2s; white-space: nowrap;
+min-width: 90px;
+}
+.play-btn:active { transform: scale(0.96); }
+.play-btn.landing { background: linear-gradient(135deg, #00e676, #00b248); box-shadow: 0 4px 20px rgba(0,230,118,0.4); }
+.play-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.controls-row2 {
+display: flex; gap: 6px; align-items: center; margin-bottom: 10px;
+}
+.mode-label { font-size: 11px; color: var(–md-text-secondary); letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; }
+.mode-btns { display: flex; gap: 4px; flex: 1; }
+.mode-btn {
+flex: 1; padding: 7px 4px; text-align: center;
+background: var(–md-surface3);
+border: 1.5px solid var(–md-border);
+border-radius: var(–radius-sm);
+color: var(–md-text-secondary);
+font-size: 11px; font-weight: 600; font-family: ‘Exo 2’, sans-serif;
+cursor: pointer; transition: all 0.15s;
+}
+.mode-btn.active { background: rgba(0,149,246,0.2); border-color: var(–md-primary); color: var(–md-primary); }
+
+.game-stats {
+display: flex; gap: 12px; align-items: center;
+padding: 8px 12px;
+background: var(–md-surface3);
+border-radius: var(–radius-sm);
+border: 1px solid var(–md-border);
+}
+.stat-item { flex:1; text-align: center; }
+.stat-val { font-size: 14px; font-weight: 700; color: var(–md-text); }
+.stat-lbl { font-size: 9px; color: var(–md-text-secondary); text-transform: uppercase; letter-spacing: 1px; }
+
+/* ===== BALANCE PAGE ===== */
+#page-balance {
+padding: 0;
+background: var(–md-surface);
+overflow-y: auto;
+}
+
+.page-hero {
+padding: 32px 24px 24px;
+background: linear-gradient(160deg, #0a1e3a 0%, #0d1520 100%);
+text-align: center;
+border-bottom: 1px solid var(–md-border);
+}
+
+.balance-amount {
+font-family: ‘Rajdhani’, sans-serif;
+font-size: 52px; font-weight: 700;
+color: var(–md-gold);
+text-shadow: 0 0 30px rgba(255,215,0,0.3);
+line-height: 1;
+}
+.balance-currency { font-size: 20px; color: var(–md-text-secondary); margin-bottom: 4px; }
+.balance-label { font-size: 12px; color: var(–md-text-secondary); letter-spacing: 2px; text-transform: uppercase; margin-top: 8px; }
+
+.balance-content { padding: 20px 16px; }
+
+.card {
+background: var(–md-surface2);
+border: 1px solid var(–md-border);
+border-radius: var(–radius-lg);
+padding: 20px;
+margin-bottom: 16px;
+}
+.card-title {
+font-size: 13px; color: var(–md-text-secondary);
+text-transform: uppercase; letter-spacing: 2px;
+margin-bottom: 16px; font-weight: 600;
+}
+
+.amount-input {
+width: 100%; padding: 14px 18px;
+background: var(–md-surface3);
+border: 1.5px solid var(–md-border);
+border-radius: var(–radius-md);
+color: var(–md-text); font-family: ‘Exo 2’, sans-serif;
+font-size: 20px; font-weight: 700;
+outline: none; transition: border-color 0.2s;
+text-align: center; margin-bottom: 12px;
+}
+.amount-input:focus { border-color: var(–md-primary); }
+
+.amount-presets { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.preset-btn {
+flex: 1; min-width: 60px; padding: 8px;
+background: var(–md-surface3);
+border: 1px solid var(–md-border);
+border-radius: var(–radius-sm);
+color: var(–md-text-secondary);
+font-family: ‘Exo 2’, sans-serif;
+font-size: 13px; font-weight: 600;
+cursor: pointer; text-align: center;
+transition: all 0.15s;
+}
+.preset-btn:active { background: rgba(0,149,246,0.2); color: var(–md-primary); border-color: var(–md-primary); }
+
+.primary-btn {
+width: 100%; padding: 16px;
+background: linear-gradient(135deg, #0095f6, #0077c2);
+border: none; border-radius: var(–radius-md);
+color: white; font-family: ‘Rajdhani’, sans-serif;
+font-size: 18px; font-weight: 700; letter-spacing: 1px;
+cursor: pointer;
+box-shadow: 0 4px 20px rgba(0,149,246,0.3);
+transition: all 0.2s;
+}
+.primary-btn:active { transform: scale(0.98); }
+
+.success-btn {
+background: linear-gradient(135deg, #00e676, #00b248);
+box-shadow: 0 4px 20px rgba(0,230,118,0.3);
+}
+.danger-btn {
+background: linear-gradient(135deg, #ff3d4a, #c62828);
+box-shadow: 0 4px 20px rgba(255,61,74,0.3);
+}
+
+/* ===== DEPOSIT MODAL ===== */
+.modal-overlay {
+position: fixed; inset: 0; z-index: 500;
+background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
+display: flex; align-items: flex-end;
+opacity: 0; pointer-events: none;
+transition: opacity 0.3s;
+}
+.modal-overlay.show { opacity:1; pointer-events: all; }
+
+.modal-sheet {
+width: 100%;
+background: var(–md-surface2);
+border-radius: var(–radius-xl) var(–radius-xl) 0 0;
+border-top: 1px solid var(–md-border);
+padding: 0 20px 40px;
+transform: translateY(100%);
+transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+max-height: 90vh; overflow-y: auto;
+}
+.modal-overlay.show .modal-sheet { transform: translateY(0); }
+
+.modal-handle {
+width: 40px; height: 4px;
+background: rgba(255,255,255,0.2); border-radius: 99px;
+margin: 12px auto 20px;
+}
+
+.modal-title {
+font-family: ‘Rajdhani’, sans-serif;
+font-size: 24px; font-weight: 700;
+text-align: center; margin-bottom: 8px;
+color: var(–md-text);
+}
+
+.deposit-instruction {
+background: rgba(0,149,246,0.1);
+border: 1px solid rgba(0,149,246,0.3);
+border-radius: var(–radius-md);
+padding: 16px;
+margin: 16px 0;
+}
+.deposit-instruction p { font-size: 14px; line-height: 1.6; }
+.deposit-instruction .highlight {
+color: var(–md-secondary); font-weight: 700; font-size: 16px;
+}
+.deposit-instruction .amount-big {
+color: var(–md-gold); font-family: ‘Rajdhani’, sans-serif;
+font-size: 26px; font-weight: 700;
+display: block; text-align: center; margin: 10px 0;
+}
+.deposit-instruction .warning {
+color: var(–md-accent); font-size: 12px; margin-top: 10px;
+display: flex; gap: 6px; align-items: flex-start;
+}
+
+.modal-btns { display: flex; gap: 10px; margin-top: 16px; }
+.modal-btns .primary-btn { flex: 1; }
+.modal-btn-outline {
+flex: 1; padding: 16px;
+background: transparent;
+border: 1.5px solid var(–md-border);
+border-radius: var(–radius-md);
+color: var(–md-text-secondary);
+font-family: ‘Rajdhani’, sans-serif;
+font-size: 18px; font-weight: 700;
+cursor: pointer;
+transition: all 0.2s;
+}
+.modal-btn-outline:active { border-color: var(–md-primary); color: var(–md-primary); }
+
+/* ===== WITHDRAW PAGE ===== */
+#page-withdraw { overflow-y: auto; padding: 0; background: var(–md-surface); }
+
+.page-header {
+padding: 20px 20px 16px;
+background: var(–md-surface2);
+border-bottom: 1px solid var(–md-border);
+flex-shrink: 0;
+}
+.page-header h2 {
+font-family: ‘Rajdhani’, sans-serif;
+font-size: 24px; font-weight: 700;
+color: var(–md-text);
+}
+.page-header p { font-size: 13px; color: var(–md-text-secondary); margin-top: 4px; }
+
+.withdraw-content { padding: 16px; }
+
+/* ===== BOTTOM NAV ===== */
+.bottom-nav {
+flex-shrink: 0;
+display: flex;
+background: var(–md-surface2);
+border-top: 1px solid var(–md-border);
+padding-bottom: env(safe-area-inset-bottom, 8px);
+}
+
+.nav-btn {
+flex: 1; display: flex; flex-direction: column;
+align-items: center; justify-content: center;
+padding: 10px 4px 8px;
+cursor: pointer; border: none; background: transparent;
+transition: all 0.2s;
+position: relative;
+}
+
+.nav-btn.active .nav-icon { color: var(–md-primary); transform: scale(1.1); }
+.nav-btn.active .nav-label { color: var(–md-primary); }
+
+.nav-icon {
+font-size: 24px; color: var(–md-text-secondary);
+transition: all 0.2s;
+display: block; line-height: 1;
+}
+.nav-label {
+font-size: 10px; color: var(–md-text-secondary);
+font-weight: 600; margin-top: 4px;
+text-transform: uppercase; letter-spacing: 0.5px;
+transition: color 0.2s;
+}
+
+.nav-active-dot {
+position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+width: 4px; height: 4px; border-radius: 99px;
+background: var(–md-primary); opacity: 0; transition: opacity 0.2s;
+}
+.nav-btn.active .nav-active-dot { opacity: 1; }
+
+/* ===== NOTIFICATION TOAST ===== */
+.toast {
+position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-80px);
+background: var(–md-surface3);
+border: 1px solid var(–md-border);
+border-radius: var(–radius-md);
+padding: 12px 20px;
+font-size: 14px; font-weight: 600;
+box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+z-index: 999; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+white-space: nowrap;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.success { border-color: var(–md-success); color: var(–md-success); }
+.toast.error { border-color: var(–md-danger); color: var(–md-danger); }
+
+/* ===== PAYOUT NOTIFICATION MODAL ===== */
+#payout-notify {
+position: fixed; inset: 0; z-index: 900;
+background: rgba(0,0,0,0.8); backdrop-filter: blur(12px);
+display: flex; align-items: center; justify-content: center;
+padding: 24px;
+opacity: 0; pointer-events: none; transition: opacity 0.3s;
+}
+#payout-notify.show { opacity:1; pointer-events: all; }
+.payout-card {
+background: var(–md-surface2);
+border: 1px solid rgba(0,230,118,0.4);
+border-radius: var(–radius-xl);
+padding: 32px 24px;
+text-align: center;
+max-width: 320px; width: 100%;
+transform: scale(0.8); transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+#payout-notify.show .payout-card { transform: scale(1); }
+.payout-emoji { font-size: 56px; margin-bottom: 16px; display: block; }
+.payout-title { font-family: ‘Rajdhani’, sans-serif; font-size: 28px; font-weight: 700; color: var(–md-success); margin-bottom: 8px; }
+.payout-desc { font-size: 15px; color: var(–md-text-secondary); margin-bottom: 24px; line-height: 1.5; }
+.payout-amount { font-size: 36px; font-weight: 700; color: var(–md-gold); font-family: ‘Rajdhani’, sans-serif; margin-bottom: 20px; }
+
+</style>
+</head>
+<body>
+
+<!-- LOADING SCREEN -->
+
+<div id="loading-screen">
+  <div class="loading-stars" id="stars-container"></div>
+  <div class="loading-plane-wrap">
+    <div class="plane-ring"></div>
+    <div class="plane-ring"></div>
+    <div class="plane-ring"></div>
+    <svg class="plane-svg" viewBox="0 0 100 100" fill="none">
+      <!-- Plane body -->
+      <ellipse cx="50" cy="52" rx="32" ry="12" fill="#0d2244" stroke="#0095f6" stroke-width="1.5"/>
+      <!-- Fuselage -->
+      <path d="M22 52 C28 44 70 44 82 52 C88 56 80 64 50 64 C20 64 16 58 22 52Z" fill="#0a1a35"/>
+      <!-- Nose -->
+      <path d="M72 52 L92 54 L72 58 Z" fill="#0095f6"/>
+      <!-- Wings -->
+      <path d="M45 52 L25 28 L62 48 Z" fill="#1565c0"/>
+      <path d="M45 52 L25 28 L55 52 Z" fill="#0d47a1" opacity="0.6"/>
+      <!-- Tail -->
+      <path d="M22 52 L14 36 L28 52 Z" fill="#1565c0"/>
+      <!-- Engine glow -->
+      <circle cx="50" cy="52" r="5" fill="#00e5ff" opacity="0.4"/>
+      <!-- Window -->
+      <ellipse cx="60" cy="50" rx="6" ry="4" fill="#00e5ff" opacity="0.6"/>
+      <ellipse cx="70" cy="51" rx="4" ry="3" fill="#00e5ff" opacity="0.4"/>
+      <!-- Exhaust -->
+      <path d="M18 54 C12 55 8 56 4 58" stroke="#00e5ff" stroke-width="2" opacity="0.7" stroke-linecap="round"/>
+      <path d="M16 52 C10 51 6 50 2 48" stroke="#0095f6" stroke-width="1.5" opacity="0.5" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div class="loading-title">I am clan fly</div>
+  <div class="loading-subtitle">Loading...</div>
+  <div class="loading-bar-wrap">
+    <div class="loading-bar"></div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+
+<div id="app">
+  <!-- PAYOUT NOTIFICATION -->
+  <div id="payout-notify">
+    <div class="payout-card">
+      <span class="payout-emoji">↑</span>
+      <div class="payout-title">Вывод одобрен!</div>
+      <div class="payout-amount" id="payout-amount-text">+1,000 $</div>
+      <div class="payout-desc">Ваш запрос на вывод был одобрен администратором. Средства отправлены!</div>
+      <button class="primary-btn success-btn" onclick="closePayout()">Отлично</button>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+
+  <div class="toast" id="toast"></div>
+
+  <!-- GAME PAGE -->
+
+  <div class="page active" id="page-game">
+    <div class="game-header">
+      <div class="game-header-balance">
+        <span class="balance-icon">$</span>
+        <span id="header-balance">0 $</span>
+      </div>
+      <div class="game-header-title">I AM CLAN FLY</div>
+      <div class="game-header-streak" id="flight-count">Полётов: 0</div>
+    </div>
+
+```
+<div class="game-canvas-wrap">
+  <canvas id="game-canvas"></canvas>
+  <div class="multiplier-display" id="multiplier-display">×1.00</div>
+  <div class="crash-overlay" id="crash-overlay">
+    <div class="crash-text">💥 CRASH!</div>
+    <div class="crash-sub" id="crash-sub-text"></div>
+  </div>
+  <div class="win-overlay" id="win-overlay">
+    <div class="win-text">🏆 ПОСАДКА!</div>
+    <div class="win-amount" id="win-amount-text"></div>
+  </div>
+</div>
+
+<div class="game-controls">
+  <div class="controls-row1">
+    <div class="bet-input-wrap">
+      <label>Ставка</label>
+      <input type="number" class="bet-input" id="bet-input" value="100" min="10" max="100000">
+    </div>
+    <div class="bet-quick">
+      <button class="bet-quick-btn" onclick="addBet(100)">+100</button>
+      <button class="bet-quick-btn" onclick="addBet(500)">+500</button>
+      <button class="bet-quick-btn" onclick="addBet(1000)">+1К</button>
+    </div>
+    <button class="play-btn" id="play-btn" onclick="handlePlayBtn()">ИГРАТЬ</button>
+  </div>
+  <div class="controls-row2">
+    <span class="mode-label">Режим:</span>
+    <div class="mode-btns">
+      <button class="mode-btn" onclick="setMode('slow',this)">🐢 Медленно</button>
+      <button class="mode-btn active" onclick="setMode('normal',this)">✈ Обычный</button>
+      <button class="mode-btn" onclick="setMode('fast',this)">⚡ Быстро</button>
+    </div>
+  </div>
+  <div class="game-stats">
+    <div class="stat-item">
+      <div class="stat-val" id="stat-collected">0 $</div>
+      <div class="stat-lbl">Собрано</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val" id="stat-distance">0 м</div>
+      <div class="stat-lbl">Пройдено</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val" id="stat-best">×1.00</div>
+      <div class="stat-lbl">Лучший кэф</div>
+    </div>
+  </div>
+</div>
+```
+
+  </div>
+
+  <!-- BALANCE PAGE -->
+
+  <div class="page" id="page-balance">
+    <div class="page-hero">
+      <div class="balance-label">Ваш баланс</div>
+      <div class="balance-amount" id="balance-display">0</div>
+      <div class="balance-currency">$ долларов</div>
+    </div>
+    <div class="balance-content">
+      <div class="card">
+        <div class="card-title">Пополнить баланс</div>
+        <input type="number" class="amount-input" id="deposit-amount" placeholder="Введите сумму" min="100">
+        <div class="amount-presets">
+          <button class="preset-btn" onclick="setDeposit(500)">500 $</button>
+          <button class="preset-btn" onclick="setDeposit(1000)">1 000 $</button>
+          <button class="preset-btn" onclick="setDeposit(2000)">2 000 $</button>
+          <button class="preset-btn" onclick="setDeposit(5000)">5 000 $</button>
+        </div>
+        <button class="primary-btn" onclick="openDepositModal()">Пополнить</button>
+      </div>
+
+```
+  <div class="card">
+    <div class="card-title">Статистика</div>
+    <div style="display:flex; gap:12px;">
+      <div style="flex:1; text-align:center; padding:12px; background:var(--md-surface3); border-radius:12px; border:1px solid var(--md-border);">
+        <div style="font-size:20px; font-weight:700; color:var(--md-gold);" id="stats-total-won">0 $</div>
+        <div style="font-size:10px; color:var(--md-text-secondary); text-transform:uppercase; margin-top:4px;">Выиграно</div>
+      </div>
+      <div style="flex:1; text-align:center; padding:12px; background:var(--md-surface3); border-radius:12px; border:1px solid var(--md-border);">
+        <div style="font-size:20px; font-weight:700; color:var(--md-text);" id="stats-games">0</div>
+        <div style="font-size:10px; color:var(--md-text-secondary); text-transform:uppercase; margin-top:4px;">Игр сыграно</div>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+  </div>
+
+  <!-- WITHDRAW PAGE -->
+
+  <div class="page" id="page-withdraw">
+    <div class="page-header">
+      <h2>Вывод средств</h2>
+      <p>Минимальная сумма вывода — 500 $</p>
+    </div>
+    <div class="withdraw-content">
+      <div class="card">
+        <div class="card-title">Ваш профиль</div>
+        <div style="display:flex; align-items:center; gap:14px; padding:12px; background:var(--md-surface3); border-radius:12px; border:1px solid var(--md-border);">
+          <div style="width:48px; height:48px; border-radius:50%; background:linear-gradient(135deg,#0095f6,#00e5ff); display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0;" id="profile-avatar">👤</div>
+          <div>
+            <div style="font-weight:700; font-size:15px;" id="profile-name">Пользователь</div>
+            <div style="font-size:12px; color:var(--md-text-secondary);" id="profile-username">@user</div>
+          </div>
+          <div style="margin-left:auto; text-align:right;">
+            <div style="font-size:18px; font-weight:700; color:var(--md-gold);" id="profile-balance">0 $</div>
+            <div style="font-size:10px; color:var(--md-text-secondary);">Баланс</div>
+          </div>
+        </div>
+      </div>
+
+```
+  <div class="card">
+    <div class="card-title">Сумма вывода</div>
+    <input type="number" class="amount-input" id="withdraw-amount" placeholder="Введите сумму" min="500">
+    <div class="amount-presets">
+      <button class="preset-btn" onclick="setWithdraw(500)">500 $</button>
+      <button class="preset-btn" onclick="setWithdraw(1000)">1 000 $</button>
+      <button class="preset-btn" onclick="setWithdraw(2000)">2 000 $</button>
+      <button class="preset-btn" onclick="setWithdraw('all')">Всё</button>
+    </div>
+    <button class="primary-btn" onclick="requestWithdraw()">Вывести</button>
+  </div>
+
+  <div class="card" style="opacity:0.7;">
+    <div class="card-title">Информация</div>
+    <p style="font-size:13px; color:var(--md-text-secondary); line-height:1.6;">
+      После нажатия кнопки «Вывести» ваш запрос уйдёт администратору.<br><br>
+      Выплаты обрабатываются в течение <strong style="color:var(--md-text);">24 часов</strong>.
+      Вы получите уведомление о статусе.
+    </p>
+  </div>
+</div>
+```
+
+  </div>
+
+  <!-- BOTTOM NAV -->
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" onclick="switchPage('game', this)">
+      <span class="nav-icon">✈</span>
+      <span class="nav-label">Игра</span>
+      <div class="nav-active-dot"></div>
+    </button>
+    <button class="nav-btn" onclick="switchPage('balance', this)">
+      <span class="nav-icon">$</span>
+      <span class="nav-label">Баланс</span>
+      <div class="nav-active-dot"></div>
+    </button>
+    <button class="nav-btn" onclick="switchPage('withdraw', this)">
+      <span class="nav-icon">↑</span>
+      <span class="nav-label">Вывод</span>
+      <div class="nav-active-dot"></div>
+    </button>
+  </nav>
+</div>
+
+<!-- DEPOSIT MODAL -->
+
+<div class="modal-overlay" id="deposit-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Пополнение баланса</div>
+    <div class="deposit-instruction">
+      <p>Отправьте в бот <span class="highlight">Бот Бандит</span> сумму:</p>
+      <span class="amount-big" id="deposit-modal-amount">1 000 $</span>
+      <p>На аккаунт: <span class="highlight">@bigboss333i</span></p>
+      <div class="warning">
+        ! Обязательно включите просмотр профиля, чтобы не было обмана!
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="modal-btn-outline" onclick="closeDepositModal()">Отменить</button>
+      <button class="primary-btn success-btn" onclick="confirmDeposit()">Пополнил</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== CONFIG — замени на свой URL после деплоя бэкенда =====
+const API_BASE = 'https://lzozo.onrender.com'; // ← ВСТАВЬ СВОЙ URL
+
+// ===== STATE =====
+let state = {
+  balance: 0,
+  totalWon: 0,
+  gamesPlayed: 0,
+  flightCount: 0,
+  bestMultiplier: 1.0,
+  gameMode: 'normal',
+  userId: null,
+  username: 'user',
+  firstName: 'Player',
+};
+
+// ===== API HELPER =====
+async function api(method, path, body) {
+  try {
+    const opts = {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+    };
+    if (body) opts.body = JSON.stringify(body);
+    const res = await fetch(API_BASE + path, opts);
+    return await res.json();
+  } catch(e) {
+    console.error('API error:', e);
+    return { ok: false, error: e.message };
+  }
+}
+
+// ===== INIT TELEGRAM =====
+function initTelegram() {
+  if (window.Telegram && window.Telegram.WebApp) {
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+    tg.setHeaderColor('#0a0e1a');
+    tg.setBackgroundColor('#0a0e1a');
+    const user = tg.initDataUnsafe?.user;
+    if (user) {
+      state.userId = String(user.id);
+      state.username = user.username || 'user';
+      state.firstName = user.first_name || 'Player';
+    }
+  }
+  // Fallback for testing outside Telegram
+  if (!state.userId) {
+    state.userId = 'test_' + Math.random().toString(36).slice(2, 8);
+    state.username = 'testuser';
+    state.firstName = 'Test';
+  }
+}
+
+// ===== LOAD USER FROM SERVER =====
+async function loadUser() {
+  const res = await api('POST', '/api/user/init', {
+    tg_id: state.userId,
+    username: state.username,
+    first_name: state.firstName,
+  });
+  if (res.ok && res.user) {
+    state.balance = res.user.balance;
+    state.totalWon = res.user.total_won;
+    state.gamesPlayed = res.user.games_played;
+    updateBalanceUI();
+    updateProfileUI();
+    // Show payout notification if pending
+    if (res.payout_notify) {
+      document.getElementById('payout-amount-text').textContent =
+        '+' + formatNum(res.payout_notify.amount) + ' $';
+      document.getElementById('payout-notify').classList.add('show');
+    }
+  }
+}
+
+function updateProfileUI() {
+  const n = document.getElementById('profile-name');
+  const u = document.getElementById('profile-username');
+  const a = document.getElementById('profile-avatar');
+  if (n) n.textContent = state.firstName;
+  if (u) u.textContent = '@' + state.username;
+  if (a) a.textContent = state.firstName.charAt(0).toUpperCase();
+}
+
+// ===== LOADING =====
+window.addEventListener('load', async () => {
+  initTelegram();
+  generateStars();
+  await loadUser();
+  setTimeout(() => {
+    document.getElementById('loading-screen').classList.add('hide');
+    document.getElementById('app').classList.add('show');
+    initGame();
+    updateBalanceUI();
+  }, 2800);
+});
+
+function generateStars() {
+  const c = document.getElementById('stars-container');
+  for (let i = 0; i < 80; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const size = Math.random() * 3 + 1;
+    s.style.cssText = `
+      width:${size}px; height:${size}px;
+      left:${Math.random()*100}%; top:${Math.random()*100}%;
+      --d:${2+Math.random()*4}s; --delay:${Math.random()*3}s;
+    `;
+    c.appendChild(s);
+  }
+}
+
+function closePayout() {
+  document.getElementById('payout-notify').classList.remove('show');
+}
+
+// ===== NAVIGATION =====
+function switchPage(name, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'balance' || name === 'withdraw') {
+    loadUser(); // Refresh balance from server
+  }
+  if (name === 'withdraw') {
+    document.getElementById('profile-balance').textContent = formatNum(state.balance) + ' $';
+  }
+}
+
+// ===== BALANCE UI =====
+function updateBalanceUI() {
+  document.getElementById('balance-display').textContent = formatNum(state.balance);
+  document.getElementById('header-balance').textContent = formatNum(state.balance) + ' $';
+  document.getElementById('stats-total-won').textContent = formatNum(state.totalWon) + ' $';
+  document.getElementById('stats-games').textContent = state.gamesPlayed;
+  document.getElementById('profile-balance').textContent = formatNum(state.balance) + ' $';
+}
+
+function formatNum(n) {
+  if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+  if (n >= 1000) return n.toLocaleString('ru-RU');
+  return n.toString();
+}
+
+// ===== DEPOSIT =====
+function openDepositModal() {
+  const amount = parseInt(document.getElementById('deposit-amount').value);
+  if (!amount || amount < 1) { showToast('Введите сумму', 'error'); return; }
+  document.getElementById('deposit-modal-amount').textContent = formatNum(amount) + ' $';
+  document.getElementById('deposit-modal').classList.add('show');
+}
+
+function closeDepositModal() {
+  document.getElementById('deposit-modal').classList.remove('show');
+}
+
+async function confirmDeposit() {
+  const amount = parseInt(document.getElementById('deposit-amount').value);
+  closeDepositModal();
+  const res = await api('POST', '/api/request', {
+    tg_id: state.userId,
+    username: state.username,
+    first_name: state.firstName,
+    type: 'deposit',
+    amount,
+  });
+  if (res.ok) {
+    showToast('Заявка отправлена! Ожидайте пополнения', 'success');
+    document.getElementById('deposit-amount').value = '';
+  } else {
+    showToast('Ошибка: ' + (res.error || 'попробуйте позже'), 'error');
+  }
+}
+
+function setDeposit(val) { document.getElementById('deposit-amount').value = val; }
+function setWithdraw(val) {
+  if (val === 'all') document.getElementById('withdraw-amount').value = state.balance;
+  else document.getElementById('withdraw-amount').value = val;
+}
+
+// ===== WITHDRAW =====
+async function requestWithdraw() {
+  const amount = parseInt(document.getElementById('withdraw-amount').value);
+  if (!amount || amount < 1) { showToast('Введите сумму', 'error'); return; }
+  if (amount > state.balance) { showToast('Недостаточно средств', 'error'); return; }
+
+  const res = await api('POST', '/api/request', {
+    tg_id: state.userId,
+    username: state.username,
+    first_name: state.firstName,
+    type: 'withdraw',
+    amount,
+  });
+
+  if (res.ok) {
+    state.balance = res.user.balance;
+    updateBalanceUI();
+    showToast('Заявка на вывод отправлена!', 'success');
+    document.getElementById('withdraw-amount').value = '';
+  } else {
+    showToast('Ошибка: ' + (res.error || 'попробуйте позже'), 'error');
+  }
+}
+
+// ===== TOAST =====
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + type + ' show';
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ===== GAME MODE =====
+function setMode(mode, btn) {
+  state.gameMode = mode;
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function addBet(v) {
+  const input = document.getElementById('bet-input');
+  input.value = (parseInt(input.value) || 0) + v;
+}
+
+// ===== GAME ENGINE =====
+let canvas, ctx;
+let gameState = 'idle'; // idle, flying, crashed, landed
+let animFrame;
+let planeX, planeY, planeVX, planeVY;
+let targetX, targetY;
+let multiplier, multiplierInc;
+let bonuses, bombs;
+let yachtX, yachtY;
+let collected, distance;
+let betAmount;
+let trailPoints = [];
+
+const SPEEDS = { slow: 0.3, normal: 0.6, fast: 1.1 };
+
+function initGame() {
+  canvas = document.getElementById('game-canvas');
+  ctx = canvas.getContext('2d');
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+  drawIdle();
+}
+
+function resizeCanvas() {
+  const wrap = canvas.parentElement;
+  canvas.width = wrap.clientWidth;
+  canvas.height = wrap.clientHeight;
+  if (gameState === 'idle') drawIdle();
+}
+
+function drawIdle() {
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  // Sky gradient
+  const skyGrad = ctx.createLinearGradient(0, 0, 0, H * 0.75);
+  skyGrad.addColorStop(0, '#040d1f');
+  skyGrad.addColorStop(1, '#0a2040');
+  ctx.fillStyle = skyGrad;
+  ctx.fillRect(0, 0, W, H * 0.75);
+
+  // Sea
+  const seaGrad = ctx.createLinearGradient(0, H * 0.72, 0, H);
+  seaGrad.addColorStop(0, '#0a2a4a');
+  seaGrad.addColorStop(1, '#061525');
+  ctx.fillStyle = seaGrad;
+  ctx.fillRect(0, H * 0.72, W, H * 0.28);
+
+  // Wave line
+  ctx.strokeStyle = 'rgba(0,149,246,0.3)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  for (let x = 0; x <= W; x += 4) {
+    const y = H * 0.72 + Math.sin(x * 0.04) * 3;
+    x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // Stars
+  ctx.fillStyle = 'white';
+  for (let i = 0; i < 60; i++) {
+    const sx = (i * 137) % W;
+    const sy = (i * 97) % (H * 0.65);
+    const sr = i % 3 === 0 ? 1.5 : 0.8;
+    const alpha = 0.3 + (i % 5) * 0.14;
+    ctx.globalAlpha = alpha;
+    ctx.beginPath(); ctx.arc(sx, sy, sr, 0, Math.PI*2); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+
+  // Draw yacht
+  const yx = W * 0.15;
+  const yy = H * 0.72;
+  drawYacht(yx, yy, 0.9);
+
+  // Draw plane on yacht
+  drawPlane(yx + 20, yy - 28, 0, 1.0);
+
+  // Idle text
+  ctx.fillStyle = 'rgba(255,255,255,0.3)';
+  ctx.font = '600 13px "Exo 2"';
+  ctx.textAlign = 'center';
+  ctx.fillText('Сделайте ставку и нажмите ИГРАТЬ', W / 2, H * 0.5);
+}
+
+function drawYacht(x, y, scale=1) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(scale, scale);
+
+  // Hull
+  const hullGrad = ctx.createLinearGradient(0, -8, 0, 16);
+  hullGrad.addColorStop(0, '#1a4a7a');
+  hullGrad.addColorStop(1, '#0d2844');
+  ctx.fillStyle = hullGrad;
+  ctx.beginPath();
+  ctx.moveTo(-45, 0);
+  ctx.lineTo(50, 0);
+  ctx.lineTo(40, 16);
+  ctx.lineTo(-35, 16);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = '#0095f6';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // Deck
+  ctx.fillStyle = '#0f3560';
+  ctx.fillRect(-40, -8, 85, 8);
+
+  // Cabin
+  ctx.fillStyle = '#1e5799';
+  ctx.fillRect(-10, -22, 30, 14);
+  ctx.strokeStyle = '#00e5ff';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(-10, -22, 30, 14);
+
+  // Window
+  ctx.fillStyle = 'rgba(0,229,255,0.4)';
+  ctx.fillRect(-6, -19, 8, 7);
+  ctx.fillRect(8, -19, 8, 7);
+
+  // Mast
+  ctx.strokeStyle = '#4a9eff';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(10, -22); ctx.lineTo(10, -55); ctx.stroke();
+
+  // Flag
+  ctx.fillStyle = '#ff6b35';
+  ctx.beginPath();
+  ctx.moveTo(10, -55);
+  ctx.lineTo(28, -48);
+  ctx.lineTo(10, -42);
+  ctx.closePath();
+  ctx.fill();
+
+  // Wake
+  ctx.strokeStyle = 'rgba(0,149,246,0.3)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(50, 8); ctx.quadraticCurveTo(70, 12, 90, 8);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+function drawPlane(x, y, angle, scale=1) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  ctx.scale(scale, scale);
+
+  // Exhaust
+  ctx.strokeStyle = 'rgba(0,229,255,0.4)';
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(-22, 0);
+  ctx.lineTo(-36, 2);
+  ctx.stroke();
+  ctx.lineWidth = 2;
+  ctx.globalAlpha = 0.25;
+  ctx.beginPath(); ctx.moveTo(-20, -3); ctx.lineTo(-38, -5); ctx.stroke();
+  ctx.globalAlpha = 1;
+
+  // Wing
+  ctx.fillStyle = '#1565c0';
+  ctx.beginPath();
+  ctx.moveTo(0, 0); ctx.lineTo(-18, -20); ctx.lineTo(8, -2); ctx.closePath();
+  ctx.fill();
+
+  // Body
+  const bodyGrad = ctx.createLinearGradient(-22, -8, 22, 8);
+  bodyGrad.addColorStop(0, '#0d2244');
+  bodyGrad.addColorStop(0.5, '#1565c0');
+  bodyGrad.addColorStop(1, '#1976d2');
+  ctx.fillStyle = bodyGrad;
+  ctx.beginPath();
+  ctx.ellipse(0, 0, 22, 7, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // Nose
+  ctx.fillStyle = '#0095f6';
+  ctx.beginPath();
+  ctx.moveTo(22, 0); ctx.lineTo(34, 2); ctx.lineTo(22, 5); ctx.closePath();
+  ctx.fill();
+
+  // Tail
+  ctx.fillStyle = '#1565c0';
+  ctx.beginPath();
+  ctx.moveTo(-18, 0); ctx.lineTo(-26, -14); ctx.lineTo(-14, 0); ctx.closePath();
+  ctx.fill();
+
+  // Window
+  ctx.fillStyle = 'rgba(0,229,255,0.7)';
+  ctx.beginPath(); ctx.ellipse(8, -2, 5, 3.5, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = 'rgba(0,229,255,0.4)';
+  ctx.beginPath(); ctx.ellipse(16, -1, 3.5, 2.5, 0, 0, Math.PI*2); ctx.fill();
+
+  // Engine glow
+  ctx.fillStyle = 'rgba(0,229,255,0.2)';
+  ctx.beginPath(); ctx.ellipse(0, 0, 28, 9, 0, 0, Math.PI*2); ctx.fill();
+
+  ctx.restore();
+}
+
+function drawBonus(x, y, value, pulse) {
+  ctx.save();
+  ctx.translate(x, y);
+  const s = 1 + Math.sin(pulse) * 0.1;
+  ctx.scale(s, s);
+
+  ctx.fillStyle = 'rgba(255,215,0,0.15)';
+  ctx.beginPath(); ctx.arc(0, 0, 20, 0, Math.PI*2); ctx.fill();
+
+  ctx.strokeStyle = '#ffd700';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(0, 0, 18, 0, Math.PI*2); ctx.stroke();
+
+  ctx.fillStyle = '#ffd700';
+  ctx.font = 'bold 11px "Exo 2"';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('×' + value, 0, 0);
+
+  ctx.restore();
+}
+
+function drawBomb(x, y, pulse) {
+  ctx.save();
+  ctx.translate(x, y);
+  const s = 1 + Math.sin(pulse) * 0.08;
+  ctx.scale(s, s);
+
+  ctx.fillStyle = 'rgba(255,61,74,0.15)';
+  ctx.beginPath(); ctx.arc(0, 0, 20, 0, Math.PI*2); ctx.fill();
+
+  ctx.strokeStyle = '#ff3d4a';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(0, 0, 18, 0, Math.PI*2); ctx.stroke();
+
+  ctx.fillStyle = '#ff3d4a';
+  ctx.font = '18px sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('💣', 0, 1);
+
+  ctx.restore();
+}
+
+function startGame() {
+  betAmount = parseInt(document.getElementById('bet-input').value) || 100;
+  if (betAmount > state.balance) { showToast('Недостаточно средств!', 'error'); return; }
+  if (betAmount < 10) { showToast('Минимальная ставка — 1 $', 'error'); return; }
+
+  state.balance -= betAmount;
+  updateBalanceUI();
+
+  gameState = 'flying';
+  document.getElementById('play-btn').textContent = 'ПОСАДИТЬ';
+  document.getElementById('play-btn').classList.add('landing');
+  document.getElementById('crash-overlay').classList.remove('show');
+  document.getElementById('win-overlay').classList.remove('show');
+  document.getElementById('multiplier-display').classList.add('show');
+
+  const W = canvas.width, H = canvas.height;
+  yachtX = W * 0.15;
+  yachtY = H * 0.72;
+  planeX = yachtX + 20;
+  planeY = yachtY - 28;
+
+  const speed = SPEEDS[state.gameMode];
+  planeVX = 1.5 * speed;
+  planeVY = -1.2 * speed;
+
+  multiplier = 1.0;
+  multiplierInc = 0.004 * (speed * 0.8 + 0.2);
+  collected = 0;
+  distance = 0;
+  trailPoints = [];
+
+  // Spawn bonuses & bombs
+  bonuses = [];
+  bombs = [];
+  const count = 5 + Math.floor(Math.random() * 5);
+  for (let i = 0; i < count; i++) {
+    bonuses.push({
+      x: W * (0.3 + Math.random() * 0.6),
+      y: H * (0.1 + Math.random() * 0.5),
+      value: [2, 3, 5, 10][Math.floor(Math.random() * 4)],
+      hit: false
+    });
+  }
+  const bcount = 3 + Math.floor(Math.random() * 4);
+  for (let i = 0; i < bcount; i++) {
+    bombs.push({
+      x: W * (0.25 + Math.random() * 0.65),
+      y: H * (0.1 + Math.random() * 0.55),
+      hit: false
+    });
+  }
+
+  if (animFrame) cancelAnimationFrame(animFrame);
+  gameLoop();
+}
+
+let tick = 0;
+function gameLoop() {
+  if (gameState !== 'flying') return;
+  tick++;
+  const W = canvas.width, H = canvas.height;
+  const speed = SPEEDS[state.gameMode];
+
+  // Move plane
+  planeX += planeVX;
+  planeY += planeVY;
+
+  // Gradual direction changes
+  planeVX += (Math.random() - 0.48) * 0.05 * speed;
+  planeVY += (Math.random() - 0.52) * 0.04 * speed;
+  planeVX = Math.max(0.3, Math.min(3, planeVX));
+  planeVY = Math.max(-2.5, Math.min(1, planeVY));
+
+  // Bounce off top
+  if (planeY < 20) { planeVY = Math.abs(planeVY); }
+  // Bounce off sides
+  if (planeX > W - 30) { planeVX = -Math.abs(planeVX); }
+  if (planeX < 30) { planeVX = Math.abs(planeVX); }
+
+  multiplier = Math.min(multiplier + multiplierInc, 99);
+  distance += Math.sqrt(planeVX * planeVX + planeVY * planeVY);
+
+  // Trail
+  trailPoints.push({ x: planeX, y: planeY });
+  if (trailPoints.length > 40) trailPoints.shift();
+
+  // Check bomb collision
+  for (const b of bombs) {
+    if (!b.hit) {
+      const dx = planeX - b.x, dy = planeY - b.y;
+      if (Math.sqrt(dx*dx + dy*dy) < 22) {
+        b.hit = true;
+        crashPlane();
+        return;
+      }
+    }
+  }
+
+  // Check bonus collision
+  for (const bo of bonuses) {
+    if (!bo.hit) {
+      const dx = planeX - bo.x, dy = planeY - bo.y;
+      if (Math.sqrt(dx*dx + dy*dy) < 22) {
+        bo.hit = true;
+        collected += Math.floor(betAmount * bo.value * 0.1);
+        multiplier = Math.min(multiplier * 1.1, 99);
+      }
+    }
+  }
+
+  // Check if plane goes below sea
+  if (planeY > H * 0.74) {
+    crashPlane();
+    return;
+  }
+
+  // Draw frame
+  drawFrame();
+
+  // Update UI
+  document.getElementById('multiplier-display').textContent = '×' + multiplier.toFixed(2);
+  document.getElementById('stat-collected').textContent = formatNum(collected) + ' $';
+  document.getElementById('stat-distance').textContent = Math.floor(distance) + ' м';
+
+  animFrame = requestAnimationFrame(gameLoop);
+}
+
+function drawFrame() {
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  // Sky
+  const skyGrad = ctx.createLinearGradient(0, 0, 0, H * 0.75);
+  skyGrad.addColorStop(0, '#030c1e');
+  skyGrad.addColorStop(1, '#082038');
+  ctx.fillStyle = skyGrad;
+  ctx.fillRect(0, 0, W, H * 0.75);
+
+  // Stars
+  ctx.fillStyle = 'white';
+  for (let i = 0; i < 50; i++) {
+    const sx = (i * 137 + tick * 0.1) % W;
+    const sy = (i * 97) % (H * 0.65);
+    ctx.globalAlpha = 0.2 + (Math.sin(tick * 0.05 + i) + 1) * 0.2;
+    ctx.beginPath(); ctx.arc(sx, sy, i%4===0 ? 1.5 : 0.8, 0, Math.PI*2); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+
+  // Sea
+  const seaGrad = ctx.createLinearGradient(0, H * 0.72, 0, H);
+  seaGrad.addColorStop(0, '#0a2a4a'); seaGrad.addColorStop(1, '#061525');
+  ctx.fillStyle = seaGrad;
+  ctx.fillRect(0, H * 0.72, W, H * 0.28);
+
+  // Wave
+  ctx.strokeStyle = 'rgba(0,149,246,0.25)'; ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  for (let x = 0; x <= W; x += 4) {
+    const y = H * 0.72 + Math.sin((x + tick * 1.5) * 0.04) * 3;
+    x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // Trail
+  if (trailPoints.length > 2) {
+    ctx.lineWidth = 2.5;
+    for (let i = 1; i < trailPoints.length; i++) {
+      const alpha = i / trailPoints.length;
+      ctx.strokeStyle = `rgba(0,149,246,${alpha * 0.6})`;
+      ctx.beginPath();
+      ctx.moveTo(trailPoints[i-1].x, trailPoints[i-1].y);
+      ctx.lineTo(trailPoints[i].x, trailPoints[i].y);
+      ctx.stroke();
+    }
+  }
+
+  // Bombs
+  for (const b of bombs) {
+    if (!b.hit) drawBomb(b.x, b.y, tick * 0.08);
+  }
+
+  // Bonuses
+  for (const bo of bonuses) {
+    if (!bo.hit) drawBonus(bo.x, bo.y, bo.value, tick * 0.06);
+  }
+
+  // Yacht
+  drawYacht(yachtX, yachtY, 0.9);
+
+  // Plane angle
+  const angle = Math.atan2(planeVY, planeVX);
+  drawPlane(planeX, planeY, angle, 1.0);
+}
+
+function handlePlayBtn() {
+  if (gameState === 'idle' || gameState === 'crashed' || gameState === 'landed') {
+    startGame();
+  } else if (gameState === 'flying') {
+    landPlane();
+  }
+}
+
+async function landPlane() {
+  gameState = 'landed';
+  cancelAnimationFrame(animFrame);
+
+  const winnings = Math.floor(betAmount * multiplier) + collected;
+
+  // Sync with server
+  const res = await api('POST', '/api/game/result', {
+    tg_id: state.userId,
+    bet: betAmount,
+    winnings: winnings,
+    multiplier: parseFloat(multiplier.toFixed(2)),
+  });
+  if (res.ok && res.user) {
+    state.balance = res.user.balance;
+    state.totalWon = res.user.total_won;
+    state.gamesPlayed = res.user.games_played;
+  } else {
+    // Fallback local
+    state.balance += winnings;
+    state.totalWon += winnings;
+    state.gamesPlayed++;
+  }
+
+  state.flightCount++;
+  if (multiplier > state.bestMultiplier) state.bestMultiplier = multiplier;
+
+  updateBalanceUI();
+  document.getElementById('stat-best').textContent = '×' + state.bestMultiplier.toFixed(2);
+  document.getElementById('flight-count').textContent = 'Полётов: ' + state.flightCount;
+  document.getElementById('win-amount-text').textContent = '+' + formatNum(winnings) + ' $ (×' + multiplier.toFixed(2) + ')';
+  document.getElementById('win-overlay').classList.add('show');
+  document.getElementById('multiplier-display').classList.remove('show');
+  document.getElementById('play-btn').textContent = 'ИГРАТЬ';
+  document.getElementById('play-btn').classList.remove('landing');
+
+  setTimeout(() => {
+    document.getElementById('win-overlay').classList.remove('show');
+    gameState = 'idle';
+    drawIdle();
+  }, 2500);
+}
+
+async function crashPlane() {
+  gameState = 'crashed';
+  cancelAnimationFrame(animFrame);
+
+  // Sync loss with server
+  const res = await api('POST', '/api/game/result', {
+    tg_id: state.userId,
+    bet: betAmount,
+    winnings: 0,
+    multiplier: 0,
+  });
+  if (res.ok && res.user) {
+    state.balance = res.user.balance;
+    state.gamesPlayed = res.user.games_played;
+  } else {
+    state.gamesPlayed++;
+  }
+
+  updateBalanceUI();
+  document.getElementById('crash-sub-text').textContent = 'Ставка ' + formatNum(betAmount) + ' $ потеряна';
+  document.getElementById('crash-overlay').classList.add('show');
+  document.getElementById('multiplier-display').classList.remove('show');
+  document.getElementById('play-btn').textContent = 'ИГРАТЬ';
+  document.getElementById('play-btn').classList.remove('landing');
+
+  setTimeout(() => {
+    document.getElementById('crash-overlay').classList.remove('show');
+    gameState = 'idle';
+    drawIdle();
+  }, 2500);
+}
+
+</script>
+
+</body>
+</html>
