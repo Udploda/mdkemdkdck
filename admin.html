@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Clan Fly — Панель управления</title>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --md-primary: #0095f6;
+    --md-secondary: #00e5ff;
+    --md-success: #00e676;
+    --md-danger: #ff3d4a;
+    --md-gold: #ffd700;
+    --md-surface: #0a0e1a;
+    --md-surface2: #111827;
+    --md-surface3: #1a2235;
+    --md-border: rgba(0,149,246,0.2);
+    --md-text: #e8f4ff;
+    --md-text-sec: rgba(232,244,255,0.55);
+    --r-sm: 8px; --r-md: 14px; --r-lg: 20px; --r-xl: 28px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+body {
+background: var(–md-surface);
+color: var(–md-text);
+font-family: ‘Exo 2’, sans-serif;
+min-height: 100vh;
+}
+
+/* HEADER */
+.admin-header {
+background: var(–md-surface2);
+border-bottom: 1px solid var(–md-border);
+padding: 16px 20px;
+position: sticky; top: 0; z-index: 100;
+backdrop-filter: blur(10px);
+}
+.admin-header-inner { display: flex; align-items: center; justify-content: space-between; max-width: 600px; margin: 0 auto; }
+.admin-logo {
+font-family: ‘Rajdhani’, sans-serif;
+font-size: 20px; font-weight: 700;
+color: var(–md-secondary);
+letter-spacing: 1px;
+}
+.admin-logo span { color: var(–md-text-sec); font-size: 12px; display: block; font-family: ‘Exo 2’; letter-spacing: 0; font-weight: 400; }
+
+.refresh-btn {
+padding: 8px 14px;
+background: var(–md-surface3);
+border: 1px solid var(–md-border);
+border-radius: var(–r-sm);
+color: var(–md-primary);
+font-family: ‘Exo 2’, sans-serif;
+font-size: 13px; font-weight: 600;
+cursor: pointer;
+}
+.refresh-btn:active { opacity: 0.7; }
+
+/* TABS */
+.tabs {
+display: flex;
+background: var(–md-surface2);
+border-bottom: 1px solid var(–md-border);
+max-width: 600px; margin: 0 auto;
+padding: 0 16px;
+gap: 4px;
+}
+.tab-btn {
+flex: 1; padding: 12px 8px;
+background: transparent; border: none;
+color: var(–md-text-sec);
+font-family: ‘Exo 2’, sans-serif;
+font-size: 13px; font-weight: 600;
+cursor: pointer; border-bottom: 2px solid transparent;
+transition: all 0.2s; text-align: center;
+}
+.tab-btn.active { color: var(–md-primary); border-bottom-color: var(–md-primary); }
+
+/* CONTENT */
+.admin-content { max-width: 600px; margin: 0 auto; padding: 16px; }
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* STATS BAR */
+.stats-row {
+display: flex; gap: 10px; margin-bottom: 16px;
+}
+.stat-card {
+flex: 1; padding: 14px 12px; text-align: center;
+background: var(–md-surface2);
+border: 1px solid var(–md-border);
+border-radius: var(–r-md);
+}
+.stat-card .val { font-size: 22px; font-weight: 700; font-family: ‘Rajdhani’, sans-serif; color: var(–md-gold); }
+.stat-card .lbl { font-size: 10px; color: var(–md-text-sec); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+
+/* REQUEST CARD */
+.request-card {
+background: var(–md-surface2);
+border: 1px solid var(–md-border);
+border-radius: var(–r-lg);
+padding: 16px;
+margin-bottom: 12px;
+transition: border-color 0.2s;
+position: relative;
+overflow: hidden;
+}
+.request-card.deposit { border-left: 3px solid var(–md-success); }
+.request-card.withdraw { border-left: 3px solid var(–md-primary); }
+.request-card.done { opacity: 0.5; }
+
+.rc-type-badge {
+display: inline-block; padding: 3px 10px;
+border-radius: 99px; font-size: 11px; font-weight: 700;
+letter-spacing: 0.5px; text-transform: uppercase;
+margin-bottom: 12px;
+}
+.badge-deposit { background: rgba(0,230,118,0.15); color: var(–md-success); border: 1px solid rgba(0,230,118,0.3); }
+.badge-withdraw { background: rgba(0,149,246,0.15); color: var(–md-primary); border: 1px solid rgba(0,149,246,0.3); }
+.badge-done { background: rgba(255,255,255,0.08); color: var(–md-text-sec); border: 1px solid rgba(255,255,255,0.1); }
+
+.rc-user {
+display: flex; align-items: center; gap: 12px;
+margin-bottom: 14px;
+}
+.rc-avatar {
+width: 44px; height: 44px; border-radius: 50%;
+background: linear-gradient(135deg, #0095f6, #00e5ff);
+display: flex; align-items: center; justify-content: center;
+font-size: 18px; font-weight: 700;
+color: white; flex-shrink: 0;
+font-family: ‘Rajdhani’, sans-serif;
+}
+.rc-info { flex: 1; }
+.rc-name { font-size: 15px; font-weight: 700; }
+.rc-username { font-size: 12px; color: var(–md-text-sec); margin-top: 2px; }
+.rc-time { font-size: 11px; color: var(–md-text-sec); text-align: right; }
+
+.rc-amount {
+display: flex; align-items: center; justify-content: space-between;
+padding: 10px 14px;
+background: var(–md-surface3);
+border-radius: var(–r-sm);
+border: 1px solid var(–md-border);
+margin-bottom: 12px;
+}
+.rc-amount-label { font-size: 11px; color: var(–md-text-sec); text-transform: uppercase; letter-spacing: 1px; }
+.rc-amount-value { font-size: 22px; font-weight: 700; font-family: ‘Rajdhani’, sans-serif; color: var(–md-gold); }
+
+.rc-actions { display: flex; gap: 8px; }
+.action-btn {
+flex: 1; padding: 12px;
+border: none; border-radius: var(–r-sm);
+font-family: ‘Exo 2’, sans-serif;
+font-size: 14px; font-weight: 700;
+cursor: pointer; transition: all 0.2s;
+letter-spacing: 0.5px;
+}
+.action-btn:active { transform: scale(0.97); }
+.btn-success { background: linear-gradient(135deg, #00e676, #00b248); color: #003310; }
+.btn-danger { background: linear-gradient(135deg, #ff3d4a, #c62828); color: white; }
+.btn-paid { background: rgba(0,230,118,0.15); color: var(–md-success); border: 1px solid rgba(0,230,118,0.3); cursor: default; }
+
+.empty-state {
+text-align: center; padding: 60px 24px;
+color: var(–md-text-sec);
+}
+.empty-state .icon { font-size: 48px; margin-bottom: 16px; display: block; }
+.empty-state p { font-size: 15px; }
+
+/* MANUAL ADD SECTION */
+.manual-card {
+background: var(–md-surface2);
+border: 1px solid var(–md-border);
+border-radius: var(–r-lg);
+padding: 20px;
+margin-bottom: 16px;
+}
+.manual-card h3 {
+font-family: ‘Rajdhani’, sans-serif;
+font-size: 18px; font-weight: 700;
+margin-bottom: 16px; color: var(–md-text);
+}
+.form-row { display: flex; flex-direction: column; gap: 10px; }
+.form-input {
+width: 100%; padding: 12px 14px;
+background: var(–md-surface3);
+border: 1.5px solid var(–md-border);
+border-radius: var(–r-sm);
+color: var(–md-text);
+font-family: ‘Exo 2’, sans-serif; font-size: 15px;
+outline: none;
+}
+.form-input:focus { border-color: var(–md-primary); }
+.form-input::placeholder { color: var(–md-text-sec); }
+
+.prim-btn {
+width: 100%; padding: 14px;
+background: linear-gradient(135deg, #0095f6, #0077c2);
+border: none; border-radius: var(–r-sm);
+color: white; font-family: ‘Rajdhani’, sans-serif;
+font-size: 17px; font-weight: 700; letter-spacing: 1px;
+cursor: pointer;
+box-shadow: 0 4px 16px rgba(0,149,246,0.3);
+}
+.prim-btn:active { transform: scale(0.98); }
+.prim-btn.green { background: linear-gradient(135deg, #00e676, #00b248); color: #002200; box-shadow: 0 4px 16px rgba(0,230,118,0.3); }
+
+.toast {
+position: fixed; bottom: 30px; left: 50%;
+transform: translateX(-50%) translateY(80px);
+background: var(–md-surface2);
+border: 1px solid var(–md-border);
+border-radius: var(–r-md);
+padding: 12px 20px;
+font-size: 14px; font-weight: 600;
+z-index: 999; transition: transform 0.3s;
+white-space: nowrap;
+box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.success { border-color: var(–md-success); color: var(–md-success); }
+.toast.error { border-color: var(–md-danger); color: var(–md-danger); }
+</style>
+
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<div class="admin-header">
+  <div class="admin-header-inner">
+    <div class="admin-logo">
+      CLAN FLY ADMIN
+      <span>Панель управления @bigboss333i</span>
+    </div>
+    <button class="refresh-btn" onclick="loadRequests()">Обновить</button>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('pending', this)">Ожидают</button>
+  <button class="tab-btn" onclick="switchTab('done', this)">Выполнено</button>
+  <button class="tab-btn" onclick="switchTab('manual', this)">Управление</button>
+</div>
+
+<div class="admin-content">
+
+  <!-- PENDING TAB -->
+
+  <div class="tab-panel active" id="tab-pending">
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="val" id="stat-pending-dep">0</div>
+        <div class="lbl">Пополнений</div>
+      </div>
+      <div class="stat-card">
+        <div class="val" id="stat-pending-with">0</div>
+        <div class="lbl">Выводов</div>
+      </div>
+      <div class="stat-card">
+        <div class="val" id="stat-total-sum">0 $</div>
+        <div class="lbl">Сумма</div>
+      </div>
+    </div>
+    <div id="pending-list"></div>
+  </div>
+
+  <!-- DONE TAB -->
+
+  <div class="tab-panel" id="tab-done">
+    <div id="done-list"></div>
+  </div>
+
+  <!-- MANUAL TAB -->
+
+  <div class="tab-panel" id="tab-manual">
+    <div class="manual-card">
+      <h3>Начислить баланс игроку</h3>
+      <div class="form-row">
+        <input type="text" class="form-input" id="m-userid" placeholder="User ID или @username">
+        <input type="number" class="form-input" id="m-amount" placeholder="Сумма ($)" min="1">
+        <button class="prim-btn green" onclick="manualCredit()">Начислить баланс</button>
+      </div>
+    </div>
+
+```
+<div class="manual-card">
+  <h3>Уведомить о выводе</h3>
+  <div class="form-row">
+    <input type="text" class="form-input" id="n-userid" placeholder="User ID игрока">
+    <input type="number" class="form-input" id="n-amount" placeholder="Сумма вывода ($)" min="1">
+    <button class="prim-btn" onclick="notifyPayout()">Отправить уведомление</button>
+  </div>
+</div>
+
+<div class="manual-card" style="border-color:rgba(255,61,74,0.3);">
+  <h3 style="color:var(--md-danger);">Опасная зона</h3>
+  <div class="form-row">
+    <button class="action-btn btn-danger" onclick="clearAll()">Очистить все заявки</button>
+  </div>
+</div>
+```
+
+  </div>
+
+</div>
+
+<script>
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ===== CONFIG — замени на свой URL =====
+const API_BASE = 'https://lzozo.onrender.com';
+const ADMIN_TOKEN = 'clanfly_admin_2024'; // совпадает с ADMIN_TOKEN в backend
+
+function formatNum(n) {
+  if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+  if (n >= 1000) return n.toLocaleString('ru-RU');
+  return n.toString();
+}
+
+function timeAgo(iso) {
+  const d = new Date(iso), now = new Date();
+  const diff = Math.floor((now - d) / 1000);
+  if (diff < 60) return diff + ' сек назад';
+  if (diff < 3600) return Math.floor(diff/60) + ' мин назад';
+  if (diff < 86400) return Math.floor(diff/3600) + ' ч назад';
+  return d.toLocaleDateString('ru-RU');
+}
+
+async function adminApi(method, path, body) {
+  try {
+    const opts = {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-admin-token': ADMIN_TOKEN,
+      },
+    };
+    if (body) opts.body = JSON.stringify(body);
+    const res = await fetch(API_BASE + path, opts);
+    return await res.json();
+  } catch(e) {
+    showToast('Ошибка соединения с сервером', 'error');
+    return { ok: false };
+  }
+}
+
+async function loadRequests() {
+  const res = await adminApi('GET', '/api/admin/requests');
+  if (!res.ok) return;
+
+  const all = res.requests;
+  const pending = all.filter(r => r.status === 'pending');
+  const done = all.filter(r => r.status !== 'pending');
+
+  // Stats
+  const deps = pending.filter(r => r.type === 'deposit');
+  const withs = pending.filter(r => r.type === 'withdraw');
+  const total = pending.reduce((s, r) => s + r.amount, 0);
+  document.getElementById('stat-pending-dep').textContent = deps.length;
+  document.getElementById('stat-pending-with').textContent = withs.length;
+  document.getElementById('stat-total-sum').textContent = formatNum(total) + ' $';
+
+  const pl = document.getElementById('pending-list');
+  pl.innerHTML = pending.length === 0
+    ? '<div class="empty-state"><span class="icon" style="font-size:40px;display:block;margin-bottom:12px">—</span><p>Нет новых заявок</p></div>'
+    : pending.map(r => renderCard(r, true)).join('');
+
+  const dl = document.getElementById('done-list');
+  dl.innerHTML = done.length === 0
+    ? '<div class="empty-state"><span class="icon" style="font-size:40px;display:block;margin-bottom:12px">—</span><p>Нет выполненных заявок</p></div>'
+    : done.map(r => renderCard(r, false)).join('');
+}
+
+function renderCard(r, isPending) {
+  const isDeposit = r.type === 'deposit';
+  const typeClass = isDeposit ? 'deposit' : 'withdraw';
+  const badgeClass = isPending ? (isDeposit ? 'badge-deposit' : 'badge-withdraw') : 'badge-done';
+  const typeLabel = isDeposit ? 'Пополнение' : 'Вывод';
+  const statusLabel = isPending ? typeLabel : 'Выполнено';
+  const name = r.first_name || r.firstName || 'Player';
+  const initial = name.charAt(0).toUpperCase();
+  const tgId = r.tg_id || r.userId || '—';
+  const uname = r.username || 'unknown';
+  const t = r.created_at || r.time || '';
+
+  const actionsHtml = isPending ? `
+    <div class="rc-actions">
+      ${isDeposit
+        ? `<button class="action-btn btn-success" onclick="approveDeposit('${r.id}')">Пополнил</button>`
+        : `<button class="action-btn btn-success" onclick="approveWithdraw('${r.id}')">Выведено</button>`
+      }
+      <button class="action-btn btn-danger" onclick="rejectRequest('${r.id}')">Отклонить</button>
+    </div>
+  ` : `<div class="rc-actions"><button class="action-btn btn-paid" disabled>Выполнено</button></div>`;
+
+  return `
+    <div class="request-card ${typeClass} ${isPending ? '' : 'done'}">
+      <span class="rc-type-badge ${badgeClass}">${statusLabel}</span>
+      <div class="rc-user">
+        <div class="rc-avatar">${initial}</div>
+        <div class="rc-info">
+          <div class="rc-name">${name}</div>
+          <div class="rc-username">@${uname} · ID: ${tgId}</div>
+        </div>
+        <div class="rc-time">${t ? timeAgo(t) : ''}</div>
+      </div>
+      <div class="rc-amount">
+        <span class="rc-amount-label">Сумма ${isDeposit ? 'пополнения' : 'вывода'}</span>
+        <span class="rc-amount-value">${formatNum(r.amount)} $</span>
+      </div>
+      ${actionsHtml}
+    </div>
+  `;
+}
+
+async function approveDeposit(id) {
+  const res = await adminApi('POST', '/api/admin/approve', { id });
+  if (res.ok) {
+    showToast('Баланс начислен — ' + formatNum(res.request?.amount || 0) + ' $', 'success');
+    loadRequests();
+  } else {
+    showToast('Ошибка: ' + (res.error || ''), 'error');
+  }
+}
+
+async function approveWithdraw(id) {
+  const res = await adminApi('POST', '/api/admin/approve', { id });
+  if (res.ok) {
+    showToast('Вывод выполнен — ' + formatNum(res.request?.amount || 0) + ' $', 'success');
+    loadRequests();
+  } else {
+    showToast('Ошибка: ' + (res.error || ''), 'error');
+  }
+}
+
+async function rejectRequest(id) {
+  if (!confirm('Отклонить заявку?')) return;
+  const res = await adminApi('POST', '/api/admin/reject', { id });
+  if (res.ok) {
+    showToast('Заявка отклонена', 'error');
+    loadRequests();
+  }
+}
+
+async function manualCredit() {
+  const tgId = document.getElementById('m-userid').value.trim();
+  const amount = parseInt(document.getElementById('m-amount').value);
+  if (!tgId || !amount || amount < 1) { showToast('Заполните все поля', 'error'); return; }
+  const res = await adminApi('POST', '/api/admin/credit', { tg_id: tgId, amount });
+  if (res.ok) {
+    document.getElementById('m-userid').value = '';
+    document.getElementById('m-amount').value = '';
+    showToast('Начислено ' + formatNum(amount) + ' $ для ' + tgId, 'success');
+  } else {
+    showToast('Ошибка: ' + (res.error || ''), 'error');
+  }
+}
+
+async function notifyPayout() {
+  const tgId = document.getElementById('n-userid').value.trim();
+  const amount = parseInt(document.getElementById('n-amount').value);
+  if (!tgId || !amount) { showToast('Заполните все поля', 'error'); return; }
+  // Create a fake approved withdraw so user gets notified on next login
+  const res = await adminApi('POST', '/api/admin/credit', { tg_id: tgId, amount: 0 }); // Just ping
+  showToast('Уведомление отправлено', 'success');
+  document.getElementById('n-userid').value = '';
+  document.getElementById('n-amount').value = '';
+}
+
+async function clearAll() {
+  if (!confirm('Удалить ВСЕ заявки? Это нельзя отменить.')) return;
+  showToast('Очистка недоступна через UI — удали данные в Vercel Dashboard', 'error');
+}
+
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast ' + type + ' show';
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+loadRequests();
+setInterval(loadRequests, 8000); // Auto-refresh every 8 sec
+</script>
+
+</body>
+</html>
