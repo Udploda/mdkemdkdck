@@ -584,15 +584,13 @@ function showApp(){
 }
 
 // ── INIT ──
-document.addEventListener('DOMContentLoaded',()=>{
-  initTG();
-  genStars();
-  updateUI();
-  // Show app after 0.3s no matter what — don't wait for server
-  setTimeout(showApp, 300);
-  // Load user in background
-  loadUser();
-});
+initTG();
+genStars();
+updateUI();
+// Запускаем напрямую, так как скрипт находится в конце документа
+setTimeout(showApp, 300);
+// Грузим юзера в фоне
+loadUser();
 
 function genStars(){
   const c=document.getElementById('stars');
